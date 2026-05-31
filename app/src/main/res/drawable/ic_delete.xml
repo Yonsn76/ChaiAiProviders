@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Trash lid -->
+    <path
+        android:pathData="M3,6L21,6"
+        android:strokeColor="#FF2F3437"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Lid handle -->
+    <path
+        android:pathData="M8,6L8,4C8,3.45 8.45,3 9,3L15,3C15.55,3 16,3.45 16,4L16,6"
+        android:strokeColor="#FF2F3437"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Trash body -->
+    <path
+        android:pathData="M5,6L5,20C5,20.55 5.45,21 6,21L18,21C18.55,21 19,20.55 19,20L19,6"
+        android:strokeColor="#FF2F3437"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Inner lines -->
+    <path
+        android:pathData="M10,10L10,17"
+        android:strokeColor="#FF2F3437"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M14,10L14,17"
+        android:strokeColor="#FF2F3437"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+</vector>

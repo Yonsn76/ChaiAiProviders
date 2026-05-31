@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="canvas">#FFF7F6F3</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="border">#FFEAEAEA</color>
+    <color name="text_primary">#FF2F3437</color>
+    <color name="text_secondary">#FF787774</color>
+    <color name="text_inverse">#FFFFFFFF</color>
+    <color name="accent_dark">#FF111111</color>
+    <color name="pale_red_bg">#FFFDEBEC</color>
+    <color name="pale_red_text">#FF9F2F2D</color>
+    <color name="ripple_color">#14000000</color>
+    <color name="code_block_bg">#FFF9F9F8</color>
+    <color name="code_text">#FF2F3437</color>
+</resources>
