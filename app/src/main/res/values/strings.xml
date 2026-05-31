@@ -23,4 +23,11 @@
     <string name="select_model">Select model</string>
     <string name="hint_api_key">Paste your API key here</string>
     <string name="hint_system_prompt">Custom instructions for the AI\u2026</string>
+    <string name="add_provider">Add provider</string>
+    <string name="add_model">Add model</string>
+    <string name="provider_name">Provider name</string>
+    <string name="endpoint">Endpoint URL</string>
+    <string name="model_name">Model name</string>
+    <string name="cancel">Cancel</string>
+    <string name="saved">Saved</string>
 </resources>

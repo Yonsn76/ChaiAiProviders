@@ -3,10 +3,54 @@ package com.yonsn76.freeaiconnect.storage
 import android.content.Context
 import androidx.core.content.edit
 import com.yonsn76.freeaiconnect.models.Conversation
+import com.yonsn76.freeaiconnect.providers.CustomProvider
+import org.json.JSONArray
 import org.json.JSONObject
 
 class PrefsManager(context: Context) {
     private val prefs = context.getSharedPreferences("freeaiconnect_prefs", Context.MODE_PRIVATE)
+
+    // ── Custom Providers ─────────────────────────────────────────
+    fun getCustomProviders(): List<CustomProvider> {
+        val json = prefs.getString("custom_providers", "[]") ?: "[]"
+        return try {
+            val arr = JSONArray(json)
+            (0 until arr.length()).map { i ->
+                val obj = arr.getJSONObject(i)
+                val name = obj.getString("name")
+                val endpoint = obj.optString("endpoint", "")
+                val modelsJson = prefs.getString("custom_models_${name.lowercase()}", "[]") ?: "[]"
+                val modelsArr = JSONArray(modelsJson)
+                val models = (0 until modelsArr.length()).map { modelsArr.getString(it) }
+                CustomProvider(name, endpoint, models)
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun addCustomProvider(name: String, endpoint: String) {
+        val arr = try { JSONArray(prefs.getString("custom_providers", "[]")) } catch (e: Exception) { JSONArray() }
+        val obj = JSONObject().put("name", name).put("endpoint", endpoint)
+        arr.put(obj)
+        prefs.edit { putString("custom_providers", arr.toString()) }
+    }
+
+    fun addCustomModel(providerName: String, modelName: String) {
+        val key = "custom_models_${providerName.lowercase()}"
+        val arr = try { JSONArray(prefs.getString(key, "[]")) } catch (e: Exception) { JSONArray() }
+        arr.put(modelName)
+        prefs.edit { putString(key, arr.toString()) }
+    }
+
+    fun getCustomModels(providerName: String): List<String> {
+        val key = "custom_models_${providerName.lowercase()}"
+        val json = prefs.getString(key, "[]") ?: "[]"
+        return try {
+            val arr = JSONArray(json)
+            (0 until arr.length()).map { arr.getString(it) }
+        } catch (e: Exception) { emptyList() }
+    }
 
     // ── API Keys ────────────────────────────────────────────────
     fun getApiKey(provider: String): String =

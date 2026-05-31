@@ -1,5 +1,6 @@
 package com.yonsn76.freeaiconnect
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.yonsn76.freeaiconnect.providers.AIProvider
@@ -24,6 +26,8 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
     var onSettingsSaved: (() -> Unit)? = null
 
     private lateinit var btnClose: ImageButton
+    private lateinit var btnAddProvider: ImageButton
+    private lateinit var btnAddModel: ImageButton
     private lateinit var spinnerProvider: Spinner
     private lateinit var spinnerModel: Spinner
     private lateinit var containerOpenRouter: LinearLayout
@@ -41,7 +45,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
     private lateinit var etSystemPrompt: EditText
     private lateinit var btnSave: MaterialButton
 
-    private val providers = AIProvider.getAllProviders()
+    private var providers = listOf<AIProvider>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +61,8 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
 
         // ── Find all views ──────────────────────────────────────
         btnClose = view.findViewById(R.id.btn_close_settings)
+        btnAddProvider = view.findViewById(R.id.btn_add_provider)
+        btnAddModel = view.findViewById(R.id.btn_add_model)
         spinnerProvider = view.findViewById(R.id.spinner_provider)
         spinnerModel = view.findViewById(R.id.spinner_model)
         containerOpenRouter = view.findViewById(R.id.container_openrouter)
@@ -74,18 +80,14 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
         etSystemPrompt = view.findViewById(R.id.et_system_prompt)
         btnSave = view.findViewById(R.id.btn_save_settings)
 
+        // ── Refresh provider list with custom providers ─────────
+        providers = AIProvider.getAllProviders(requireContext())
+
         // ── Close button ────────────────────────────────────────
         btnClose.setOnClickListener { dismiss() }
 
         // ── Provider Spinner ────────────────────────────────────
-        val providerNames = providers.map { it.name }
-        val providerAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            providerNames
-        )
-        providerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerProvider.adapter = providerAdapter
+        refreshProviderSpinner()
 
         spinnerProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -100,6 +102,12 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        // ── Add Provider button ──────────────────────────────────
+        btnAddProvider.setOnClickListener { showAddProviderDialog() }
+
+        // ── Add Model button ─────────────────────────────────────
+        btnAddModel.setOnClickListener { showAddModelDialog() }
 
         // ── Temperature SeekBar ─────────────────────────────────
         sliderTemperature.max = 100
@@ -131,10 +139,12 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
 
     private fun updateModelSpinner(providerIndex: Int) {
         val provider = providers.getOrNull(providerIndex) ?: return
+        val customModels = prefsManager.getCustomModels(provider.name)
+        val allModels = provider.models + customModels.filter { it !in provider.models }
         val modelAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            provider.models
+            allModels
         )
         modelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerModel.adapter = modelAdapter
@@ -142,7 +152,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
         // Restore saved model index only if provider matches the saved one
         if (providerIndex == prefsManager.getSelectedProviderIndex()) {
             val savedModelIndex = prefsManager.getSelectedModelIndex()
-            if (savedModelIndex < provider.models.size) {
+            if (savedModelIndex < allModels.size) {
                 spinnerModel.setSelection(savedModelIndex)
             }
         } else {
@@ -156,12 +166,95 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
         containerOpenAI.visibility = View.GONE
         containerMistral.visibility = View.GONE
 
-        when (providerIndex) {
-            0 -> containerOpenRouter.visibility = View.VISIBLE
-            1 -> containerGoogle.visibility = View.VISIBLE
-            2 -> containerOpenAI.visibility = View.VISIBLE
-            3 -> containerMistral.visibility = View.VISIBLE
+        val provider = providers.getOrNull(providerIndex) ?: return
+        when (provider.name) {
+            "OpenRouter" -> containerOpenRouter.visibility = View.VISIBLE
+            "Google" -> containerGoogle.visibility = View.VISIBLE
+            "OpenAI" -> containerOpenAI.visibility = View.VISIBLE
+            "Mistral" -> containerMistral.visibility = View.VISIBLE
+            else -> {
+                containerOpenRouter.visibility = View.VISIBLE
+                etKeyOpenRouter.hint = "API Key for ${provider.name}"
+            }
         }
+    }
+
+    private fun refreshProviderSpinner() {
+        val currentName = if (spinnerProvider.selectedItemPosition >= 0) {
+            providers.getOrNull(spinnerProvider.selectedItemPosition)?.name
+        } else null
+        providers = AIProvider.getAllProviders(requireContext())
+        val providerNames = providers.map { it.name }
+        val providerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            providerNames
+        )
+        providerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerProvider.adapter = providerAdapter
+        val idx = providerNames.indexOf(currentName).takeIf { it >= 0 } ?: spinnerProvider.selectedItemPosition.coerceIn(0, providers.size - 1)
+        if (idx < providers.size) spinnerProvider.setSelection(idx)
+    }
+
+    private fun showAddProviderDialog() {
+        val inputLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 24, 32, 8)
+        }
+
+        val etName = EditText(requireContext()).apply {
+            hint = getString(R.string.provider_name)
+            setSingleLine()
+        }
+        val etEndpoint = EditText(requireContext()).apply {
+            hint = getString(R.string.endpoint)
+            setSingleLine()
+        }
+
+        inputLayout.addView(etName)
+        inputLayout.addView(etEndpoint, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = 12 })
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.add_provider)
+            .setView(inputLayout)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val name = etName.text.toString().trim()
+                val endpoint = etEndpoint.text.toString().trim()
+                if (name.isNotEmpty() && endpoint.isNotEmpty()) {
+                    prefsManager.addCustomProvider(name, endpoint)
+                    refreshProviderSpinner()
+                    Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showAddModelDialog() {
+        val providerName = providers.getOrNull(spinnerProvider.selectedItemPosition)?.name ?: return
+
+        val etModel = EditText(requireContext()).apply {
+            hint = getString(R.string.model_name)
+            setSingleLine()
+            setPadding(32, 24, 32, 8)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("${getString(R.string.add_model)} - $providerName")
+            .setView(etModel)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val modelName = etModel.text.toString().trim()
+                if (modelName.isNotEmpty()) {
+                    prefsManager.addCustomModel(providerName, modelName)
+                    updateModelSpinner(spinnerProvider.selectedItemPosition)
+                    Toast.makeText(requireContext(), getString(R.string.saved), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun loadSettings() {

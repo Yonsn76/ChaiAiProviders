@@ -44,5 +44,11 @@ abstract class AIProvider {
             OpenAIProvider(),
             MistralProvider()
         )
+
+        fun getAllProviders(context: android.content.Context): List<AIProvider> {
+            val prefs = com.yonsn76.freeaiconnect.storage.PrefsManager(context)
+            val customProviders = prefs.getCustomProviders()
+            return getAllProviders() + customProviders
+        }
     }
 }

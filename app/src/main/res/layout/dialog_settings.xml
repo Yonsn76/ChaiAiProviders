@@ -67,13 +67,33 @@
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
 
-        <Spinner
-            android:id="@+id/spinner_provider"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input_field"
-            android:padding="12dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinner_provider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input_field"
+                android:padding="12dp" />
+
+            <ImageButton
+                android:id="@+id/btn_add_provider"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_input_field"
+                android:contentDescription="@string/add_provider"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_add"
+                app:tint="@color/text_primary" />
+        </LinearLayout>
 
         <!-- Model Section -->
         <TextView
@@ -86,13 +106,33 @@
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
 
-        <Spinner
-            android:id="@+id/spinner_model"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input_field"
-            android:padding="12dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinner_model"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input_field"
+                android:padding="12dp" />
+
+            <ImageButton
+                android:id="@+id/btn_add_model"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_input_field"
+                android:contentDescription="@string/add_model"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_add"
+                app:tint="@color/text_primary" />
+        </LinearLayout>
 
         <!-- Divider -->
         <View

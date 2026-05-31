@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     private var currentConversation: Conversation? = null
     private var isStreaming = false
-    private val providers = AIProvider.getAllProviders()
+    private val providers: List<AIProvider> get() = AIProvider.getAllProviders(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,7 +149,8 @@ class MainActivity : AppCompatActivity() {
         val providerIndex = prefsManager.getSelectedProviderIndex()
         val modelIndex = prefsManager.getSelectedModelIndex()
         val provider = providers.getOrNull(providerIndex) ?: providers[0]
-        val model = provider.models.getOrNull(modelIndex) ?: provider.models[0]
+        val allModels = getModelsForProvider(provider)
+        val model = allModels.getOrNull(modelIndex) ?: allModels.firstOrNull() ?: provider.models[0]
         val apiKey = prefsManager.getApiKey(provider.name)
 
         if (provider.requiresApiKey && apiKey.isBlank()) {
@@ -323,11 +324,17 @@ class MainActivity : AppCompatActivity() {
         rvMessages.visibility = if (hasMessages) View.VISIBLE else View.INVISIBLE
     }
 
+    private fun getModelsForProvider(provider: AIProvider): List<String> {
+        val custom = prefsManager.getCustomModels(provider.name)
+        return (provider.models + custom.filter { it !in provider.models })
+    }
+
     private fun updateModelDisplay() {
         val providerIndex = prefsManager.getSelectedProviderIndex()
         val modelIndex = prefsManager.getSelectedModelIndex()
         val provider = providers.getOrNull(providerIndex) ?: providers[0]
-        val model = provider.models.getOrNull(modelIndex) ?: provider.models[0]
+        val allModels = getModelsForProvider(provider)
+        val model = allModels.getOrNull(modelIndex) ?: allModels.firstOrNull() ?: ""
         tvModelName.text = model
     }
 
