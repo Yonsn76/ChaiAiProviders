@@ -16,13 +16,22 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+    }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("release-key.jks")
+            storePassword = "freeaiconnect123"
+            keyAlias = "freeaiconnect"
+            keyPassword = "freeaiconnect123"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
